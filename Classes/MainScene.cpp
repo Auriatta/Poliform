@@ -24,6 +24,7 @@
 
 #include "MainScene.h"
 #include "SimpleAudioEngine.h"
+#include <iomanip>
 
 USING_NS_CC;
 
@@ -52,8 +53,8 @@ bool MainScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	
-
-    auto label = Label::createWithTTF("Polimorf v0.5", "fonts/Marker Felt.ttf", 24);
+	std::string title = "Polimorf v" + std::to_string(VERSION);
+    auto label = Label::createWithTTF(title.substr(0,13), "fonts/Marker Felt.ttf", 24);
     if (label == nullptr)
     {
         problemLoading("'fonts/Marker Felt.ttf'");

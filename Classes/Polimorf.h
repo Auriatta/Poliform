@@ -12,8 +12,6 @@ public:
 	Polimorf()
 	{};
 
-
-	
 	void Run();
 
 };

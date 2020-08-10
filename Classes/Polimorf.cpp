@@ -7,7 +7,7 @@ void Polimorf::Generate_Cell()
 		cocos2d::RandomHelper().random_int<int>(BORDER_Y_ORIGIN, BORDER_HEIGHT));
 
 
-	CellMutation* cell = new CellMutation(location);
+	CellSpawner* cell = new CellSpawner(location);
 }
 
 

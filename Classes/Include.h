@@ -8,6 +8,7 @@
 #define BORDER_Y_ORIGIN 40
 #define BORDER_X_ORIGIN 40
 
+#define VERSION 0.6
 
 
 

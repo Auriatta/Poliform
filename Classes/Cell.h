@@ -5,7 +5,13 @@
 #define CELL_MIN_LIFE_CYCLES	5
 #define CELL_SHAPE_CHANGE_DELAY	0.5
 
+enum class CellShapes : int
+{
+	shell = 0,
+	open = 1,
+	strike = 2
 
+};
 
 
 class Cell
@@ -15,85 +21,85 @@ protected:
 	cocos2d::DrawNode* shape;
 
 	cocos2d::Node* getCurrentScene() { return GlobalRefs::getInstance().GetMainScene(); };
+	
 	void ClearShape();
 
 public:
 		Cell(cocos2d::Point location)
-			:location(location)
+			:location(location), shape(nullptr)
 		{}
 	virtual void Create()=0;
-	virtual void Destroy()=0;
+	virtual void Destroy() { ClearShape(); };
 
-	~Cell() {};
+	~Cell() { ClearShape(); };
 };
 
 
 
 
-class ShapeShell
+class CellShell
 	:public Cell
 {
 
 public:
-	ShapeShell(cocos2d::Point location)
+	CellShell(cocos2d::Point location)
 		: Cell(location)
 	{
 		this->location = location;
 	}
 
-	void Create();
-	void Destroy();
+	void Create() override;
 
 };
 
-class ShapeStrike 
+class CellStrike 
 	:public Cell
 {
 public:
-	ShapeStrike(cocos2d::Point location)
+	CellStrike(cocos2d::Point location)
 		: Cell(location)
 	{
 		this->location = location;
 	}
-	void Create();
-	void Destroy();
+	void Create() override;
 
 };
 
 
-class ShapeOpen
+class CellOpen
 	:public Cell
 {
 public:
-	ShapeOpen(cocos2d::Point location)
+	CellOpen(cocos2d::Point location)
 		:Cell(location)
 	{
 		this->location = location;
 	}
-	void Create();
-	void Destroy();
+	void Create() override;
 
 };
 
 
 
-class CellMutation
+class CellSpawner
 {
 private:
 	cocos2d::Point location;
 	int cicles_;
-	Cell* cell_;
+	std::unique_ptr<Cell> cell;
 	cocos2d::Action* life;
 	int lastShape;
 	
 
-	void ChangeShape();
+	void Update();
 
-
+	void ChangeShapeRandom();
+	int RandNewShapeID(int max);
+	void DestroySelf();
 
 public:
-	CellMutation(cocos2d::Point location)
-		: cell_(nullptr), cicles_(0), location(location), lastShape(0)
+	CellSpawner(cocos2d::Point location)
+		: cicles_(0), location(location), lastShape(0), life(nullptr)
 	{
 		Init();
 	};

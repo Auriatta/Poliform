@@ -1,64 +1,79 @@
 #include "Cell.h"
 
-void CellMutation::ChangeShape()
+void CellSpawner::Update()
 {
-	cocos2d::RandomHelper rand;
-
-	if (cell_ != nullptr)
-	{
-		cell_->Destroy();
-		delete cell_;
-		
-	}
 	
+	ChangeShapeRandom();
 	
-	int randIndex = lastShape;
-	while (randIndex == lastShape)
-	{
-		randIndex = rand.random_int<int>(1, 3);
-	}
-	lastShape = randIndex;
-
-
-
-	switch (randIndex)
-	{
-	case 1:
-		cell_ = new ShapeShell(location);
-		break;
-	case 2:
-		cell_ = new ShapeStrike(location);
-		break;
-	case 3:
-		cell_ = new ShapeOpen(location);
-		break;
-	default:
-		cell_ = new ShapeOpen(location);
-		break;
-	}
-	cell_->Create();
-
 
 	cicles_ -= 1;
 	if (cicles_ <= 0)
 	{
-		cell_->Destroy(); // I need it to make sure that last cell shape is cleaned from screen
-		delete cell_;
-
-		cocos2d::Director::getInstance()->getActionManager()->removeAction(life);
-		delete this;
+		DestroySelf();
 	}
 }
 
-void CellMutation::Init()
+void CellSpawner::ChangeShapeRandom()
+{
+	if (cell)
+	{
+		cell->Destroy();
+		cell.reset();
+	}
+	
+	switch (static_cast<CellShapes>(RandNewShapeID(2))) // not solid
+	{
+	case CellShapes::shell:
+		cell = std::make_unique<CellShell>(CellShell(location));
+		break;
+
+	case CellShapes::strike:
+		cell = std::make_unique<CellStrike>(CellStrike(location));
+		break;
+
+	case CellShapes::open:
+		cell = std::make_unique<CellOpen>(CellOpen(location));
+		break;
+
+	default:
+		cell = std::make_unique<CellOpen>(CellOpen(location));
+		break;
+	}
+
+	cell->Create();
+
+}
+
+int CellSpawner::RandNewShapeID(int max)
+{
+	cocos2d::RandomHelper rand;
+	
+	int randIndex = lastShape;
+	while (randIndex == lastShape)
+	{
+		randIndex = rand.random_int<int>(0, max);
+	}
+	lastShape = randIndex;
+	return randIndex;
+}
+
+void CellSpawner::DestroySelf()
+{
+	
+
+	cocos2d::Director::getInstance()->getActionManager()->removeAction(life);
+	delete this;
+}
+
+void CellSpawner::Init()
 {
 	cicles_ = cocos2d::RandomHelper().random_int<int>(CELL_MIN_LIFE_CYCLES, CELL_MAX_LIFE_CYCLES);
 
-	ChangeShape();
+	Update();
 
 	life = cocos2d::CCRepeatForever::create(cocos2d::Sequence::create(
 		cocos2d::DelayTime::create(CELL_SHAPE_CHANGE_DELAY),
-		cocos2d::CallFunc::create(std::bind(&CellMutation::ChangeShape, this)),
+		cocos2d::CallFunc::create(std::bind(&CellSpawner::Update, this)),
 		nullptr));
 	
 
@@ -76,7 +91,7 @@ void CellMutation::Init()
 
 
 
-void ShapeShell::Create()
+void CellShell::Create()
 {
 	cocos2d::Point verties[4] = {
 		cocos2d::Vec2(location.x,location.y), cocos2d::Vec2(location.x,location.y-20),
@@ -89,16 +104,11 @@ void ShapeShell::Create()
 
 }
 
-void ShapeShell::Destroy()
-{
-	Cell::ClearShape();
-	
-}
 
 
 
 
-void ShapeStrike::Create()
+void CellStrike::Create()
 {
 	cocos2d::Point verties[3] = { 
 		cocos2d::Vec2(location.x,location.y),
@@ -112,18 +122,12 @@ void ShapeStrike::Create()
 
 }
 
-void ShapeStrike::Destroy()
-{
-
-	Cell::ClearShape();
-	
-}
 
 
 
 
 
-void ShapeOpen::Create()
+void CellOpen::Create()
 {
 
 	shape = cocos2d::DrawNode::create();
@@ -134,10 +138,6 @@ void ShapeOpen::Create()
 
 }
 
-void ShapeOpen::Destroy()
-{
-	Cell::ClearShape();
-}
 
 
 
@@ -145,7 +145,11 @@ void ShapeOpen::Destroy()
 
 void Cell::ClearShape()
 {
-	shape->clear();
-	shape->cleanup();
-	getCurrentScene()->removeChild(shape);
+	if (shape != nullptr)
+	{
+		shape->clear();
+		shape->cleanup();
+		getCurrentScene()->removeChild(shape);
+		shape = nullptr;
+	}
 }
