@@ -1,27 +1,40 @@
 #include "Polimorf.h"
 
-void Polimorf::Generate_Cell()
+
+void Polimorf::Create_Spawner(cocos2d::Point location)
 {
-	cocos2d::Point location = cocos2d::Point(
-		cocos2d::RandomHelper().random_int<int>(BORDER_X_ORIGIN, BORDER_WIDTH),
-		cocos2d::RandomHelper().random_int<int>(BORDER_Y_ORIGIN, BORDER_HEIGHT));
+	/*
+	I created this object via 'new'
+	because it will release itself anyway
+	*/
+	CellSpawner* cell_spawner = new CellSpawner(location);
+}
+
+void Polimorf::Update()
+{
+	behavior->update();
+
+	Create_Spawner(behavior->getPosition());
+}
 
 
-	CellSpawner* cell = new CellSpawner(location);
+cocos2d::Point Polimorf::getRandomPositionInBordersBox()
+{
+	return cocos2d::Point(
+		Random::random_int<int>(BORDER_X_ORIGIN, BORDER_WIDTH),
+		Random::random_int<int>(BORDER_Y_ORIGIN, BORDER_HEIGHT));
 }
 
 
 void Polimorf::Run()
 {
-	auto creation = cocos2d::RepeatForever::create(cocos2d::Sequence::create(
-		cocos2d::DelayTime::create(CELL_SHAPE_CHANGE_DELAY),
-		cocos2d::CallFunc::create(std::bind(&Polimorf::Generate_Cell,this)),
-		nullptr));
-	
-	auto scene = GlobalRefs::getInstance().GetMainScene();
+	const float refreshRate = 0.5;
+	cocos2d::Director::getInstance()->getScheduler()->schedule(
+		cocos2d::ccSchedulerFunc( std::bind(&Polimorf::Update,this)),
+		this, refreshRate, 0, "MainPoliformUpdate");
 
-	if (scene != nullptr)
-		scene->runAction(creation);
 
 	
 }
+
+

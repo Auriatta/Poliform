@@ -8,28 +8,30 @@
 #define BORDER_Y_ORIGIN 40
 #define BORDER_X_ORIGIN 40
 
-#define VERSION 0.6
+#define VERSION 0.7
 
+#define NUMBER_OF_POLIMORFS 3
 
+typedef cocos2d::RandomHelper Random;
 
-class GlobalRefs
+class GameBridge
 {
 private:
 	cocos2d::Node* mainScene;
 
 public:
-	GlobalRefs() {};
+	GameBridge() {};
 
-	GlobalRefs(const GlobalRefs&) = delete;
+	GameBridge(const GameBridge&) = delete;
 
 
 	cocos2d::Node* GetMainScene() { return mainScene; };
 	void SetMainScene(cocos2d::Node* mainScene) { this->mainScene = mainScene; };
 
 
-	static GlobalRefs& getInstance()
+	static GameBridge& getInstance()
 	{
-		static GlobalRefs instance;
+		static GameBridge instance;
 		return instance;
 	}
 

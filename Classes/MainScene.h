@@ -33,9 +33,14 @@ class MainScene : public cocos2d::Scene
 {
 public:
     static cocos2d::Scene* createScene();
+	
+
+	std::list<Polimorf> polimorf;
 
     virtual bool init();
-    
+
+	void runBackgroundColorAnimation();
+
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
     

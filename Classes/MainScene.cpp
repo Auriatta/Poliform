@@ -53,6 +53,10 @@ bool MainScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	
+
+	runBackgroundColorAnimation();
+
+
 	std::string title = "Polimorf v" + std::to_string(VERSION);
     auto label = Label::createWithTTF(title.substr(0,13), "fonts/Marker Felt.ttf", 24);
     if (label == nullptr)
@@ -74,12 +78,38 @@ bool MainScene::init()
 
 
 	
-	GlobalRefs::getInstance().SetMainScene(this);
-	Polimorf polimorf;
-	polimorf.Run();
+	GameBridge::getInstance().SetMainScene(this);
+	
 
+	for (int i = 0; i < NUMBER_OF_POLIMORFS; i++)
+	{
+		polimorf.push_front(Polimorf());
+		polimorf.front().Run();
+	}
 
 
 
     return true;
+}
+
+void MainScene::runBackgroundColorAnimation()
+{
+	auto screen_size = Director::getInstance()->getVisibleSize();
+	cocos2d::Color4B bg_color = Color4B(50, 50, 50,255);
+	
+	cocos2d::LayerColor* screen_layer = LayerColor::create(
+		bg_color,
+		screen_size.width,
+		screen_size.height);
+	
+	this->addChild(screen_layer,0);
+
+	screen_layer->runAction(RepeatForever::create(
+		Sequence::create(
+			DelayTime::create(4),
+			TintTo::create(1.5, Color3B(67,67,67)),
+			TintTo::create(1.5, Color3B(50, 50, 50)),
+			nullptr )));
+			
+	bg_color = Color4B::BLUE;
 }

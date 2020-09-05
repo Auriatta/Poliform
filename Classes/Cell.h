@@ -1,9 +1,9 @@
 #pragma once
 #include "Include.h"
 
-#define CELL_MAX_LIFE_CYCLES	20
-#define CELL_MIN_LIFE_CYCLES	5
-#define CELL_SHAPE_CHANGE_DELAY	0.5
+#define CELL_MAX_LIFE_CYCLES	7
+#define CELL_MIN_LIFE_CYCLES	3
+#define CELL_SHAPE_CHANGE_DELAY	0.4
 
 enum class CellShapes : int
 {
@@ -14,13 +14,14 @@ enum class CellShapes : int
 };
 
 
+
 class Cell
 {
 protected:
 	cocos2d::Point location;
 	cocos2d::DrawNode* shape;
 
-	cocos2d::Node* getCurrentScene() { return GlobalRefs::getInstance().GetMainScene(); };
+	cocos2d::Node* getCurrentScene() { return GameBridge::getInstance().GetMainScene(); };
 	
 	void ClearShape();
 
@@ -29,9 +30,10 @@ public:
 			:location(location), shape(nullptr)
 		{}
 	virtual void Create()=0;
-	virtual void Destroy() { ClearShape(); };
+	
 
-	~Cell() { ClearShape(); };
+
+	~Cell() { ClearShape(); }
 };
 
 
