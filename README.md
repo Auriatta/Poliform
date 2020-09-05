@@ -18,7 +18,7 @@ Random and simple objective writed app in a C++ OOP. Showing sample of my curren
 - Compile
 </l>
 <br>
-
+Compilation results: https://youtu.be/MlH2zC4APOk
 <br>
 
 Visual Studio 2019<br>
