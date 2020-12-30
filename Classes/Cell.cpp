@@ -3,11 +3,11 @@
 void CellSpawner::Update()
 {
 
-	
+	ClearUnusedPtrs();
 	ChangeShapeRandom();
 	
 
-	cicles_ -= 1;
+	cicles_--;
 	if (cicles_ <= 0)
 	{
 		DestroySelf();
@@ -16,33 +16,47 @@ void CellSpawner::Update()
 
 void CellSpawner::ChangeShapeRandom()
 {
-	if (cell)
-		cell.reset();
-	
+	if(!cell_list.empty() && !cell_list.front()->IsDestroyed())
+	cell_list.front()->Destroy();
 	
 	const int maxRandValueForSwitch = 2;
 	switch (static_cast<CellShapes>(RandNewShapeID(maxRandValueForSwitch)))
 	{
+
 	case CellShapes::shell:
-		cell = std::make_unique<CellShell>(CellShell(location));
+		cell_list.push_back(std::make_unique<CellShell>(CellShell(location)));
 		break;
 
 	case CellShapes::strike:
-		cell = std::make_unique<CellStrike>(CellStrike(location));
+		cell_list.push_back(std::make_unique<CellStrike>(CellStrike(location)));
 		break;
 
+
 	case CellShapes::open:
-		cell = std::make_unique<CellOpen>(CellOpen(location));
+		cell_list.push_back(std::make_unique<CellOpen>(CellOpen(location)));
 		break;
 
 	default:
-		cell = std::make_unique<CellOpen>(CellOpen(location));
+		cell_list.push_back(std::make_unique<CellOpen>(CellOpen(location)));
 		break;
 	}
+	
+	if(cell_list.front() && !cell_list.front()->IsDestroyed())
+		cell_list.front()->Create();
 
-	if(cell)
-		cell->Create();
+}
 
+void CellSpawner::ClearUnusedPtrs()
+{
+	if (!cell_list.empty())
+	{
+		std::list<std::unique_ptr<Cell>>::iterator it;
+		for (it = cell_list.begin(); it != cell_list.end(); it++)
+		{
+			if (!(*it))
+				cell_list.erase(it);
+		}
+	}
 }
 
 int CellSpawner::RandNewShapeID(int max)
@@ -91,12 +105,38 @@ void CellSpawner::Init()
 }
 
 
-void Cell::ClearShape()
+bool Cell::IsDestroyed()
+{
+	return isDestroyed;
+}
+
+void Cell::Destroy()
+{
+	if (shape != nullptr && !isDestroyed&& shape->getNumberOfRunningActions()==0)
+	{
+		isDestroyed = true;
+		shape->runAction(cocos2d::Sequence::create(cocos2d::FadeOut::create(1),
+			cocos2d::CallFunc::create([this]() {
+				if (shape != nullptr)
+				{
+					shape->clear();
+					shape->cleanup();
+					getCurrentScene()->removeChild(shape);
+					shape = nullptr;
+					this->~Cell();
+				}
+				}),
+			nullptr));
+	}
+}
+
+Cell::~Cell()
 {
 	if (shape != nullptr)
 	{
 		shape->clear();
 		shape->cleanup();
+		shape->stopAllActions();
 		getCurrentScene()->removeChild(shape);
 		shape = nullptr;
 	}
@@ -108,13 +148,23 @@ void CellShell::Create()
 {
 	const int size = 30;
 	cocos2d::Point verties[4] = {
-		cocos2d::Vec2(location.x,location.y), 
-		cocos2d::Vec2(location.x,location.y-size),
-		cocos2d::Vec2(location.x+size,location.y-size), 
-		cocos2d::Vec2(location.x +size,location.y) };
+		cocos2d::Vec2(0,0), 
+		cocos2d::Vec2(0,(-size)),
+		cocos2d::Vec2(size,(-size)), 
+		cocos2d::Vec2(size,0) };
 	Cell::shape = cocos2d::DrawNode::create();
 
-	Cell::shape->drawPolygon(verties, 4, cocos2d::Color4F(1,1,1,0), 1.4, cocos2d::Color4F::BLUE);
+	cocos2d::Color3B color;
+	if (Random::random_int(0, 1) == 0)
+		color = cocos2d::Color3B::WHITE;
+	else
+		color = cocos2d::Color3B(221, 158, 205);
+
+	const cocos2d::Vec2 newPosition = location +
+		cocos2d::Vec2(Random::random_int(-30, 30), Random::random_int(-30, 30));
+
+	Cell::shape->setPosition(newPosition);
+	Cell::shape->drawPolygon(verties, 4, cocos2d::Color4F(1,1,1,0), 1.4, cocos2d::Color4F(color));
 	
 	Cell::getCurrentScene()->addChild(Cell::shape,1);
 
@@ -129,13 +179,25 @@ void CellStrike::Create()
 {
 	const int size = 25;
 	cocos2d::Point verties[3] = { 
-		cocos2d::Vec2(location.x,location.y),
-		cocos2d::Vec2(location.x - size,location.y + size) ,
-		cocos2d::Vec2(location.x + size,location.y + size) };
+		cocos2d::Vec2(0,0),
+		cocos2d::Vec2((- size),size) ,
+		cocos2d::Vec2(size,size) };
 	Cell::shape = cocos2d::DrawNode::create();
 
-	Cell::shape->drawPolygon(verties, 3, cocos2d::Color4F(1,1,1,0), 1.4, cocos2d::Color4F::RED);
+
+	cocos2d::Color3B color;
+	if (Random::random_int(0, 1) == 0)
+		color = cocos2d::Color3B::WHITE;
+	else
+		color = cocos2d::Color3B(221, 158, 205);
+
+	const cocos2d::Vec2 newPosition = location +
+		cocos2d::Vec2(Random::random_int(-25, 25), Random::random_int(-25, 25));
+
+	Cell::shape->setPosition(newPosition);
+	Cell::shape->drawPolygon(verties, 3, cocos2d::Color4F(1,1,1,0), 1.4, cocos2d::Color4F(color));
 	
+
 	Cell::getCurrentScene()->addChild(Cell::shape, 1);
 
 }
@@ -151,10 +213,22 @@ void CellOpen::Create()
 	Cell::shape = cocos2d::DrawNode::create();
 
 	const int radius = 20;
-	const int segments = 30;
-	Cell::shape->drawCircle(cocos2d::Point(location.x, location.y), radius, 0, segments, 0, cocos2d::Color4F::GREEN);
-	
-	Cell::getCurrentScene()->addChild(Cell::shape, 1);
+	const int segments = 4000;
+
+
+	cocos2d::Color3B color;
+	if (Random::random_int(0, 1) == 0)
+		color = cocos2d::Color3B::WHITE;
+	else
+		color = cocos2d::Color3B(221, 158, 205);
+
+	const cocos2d::Vec2 newPosition = location +
+		cocos2d::Vec2(Random::random_int(-25, 25), Random::random_int(-25, 25));
+
+	Cell::shape->setLineWidth(3);
+	Cell::shape->drawCircle(newPosition, radius, 0, segments, 0,
+		cocos2d::Color4F(color));
+	Cell::getCurrentScene()->addChild(Cell::shape, 0);
 
 }
 

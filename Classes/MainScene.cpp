@@ -50,6 +50,11 @@ bool MainScene::init()
         return false;
     }
 
+	Exposition = std::make_unique<TurnEveryPoliform>(
+		TurnEveryPoliform(&polimorf, 42, 6, NUMBER_OF_POLIMORFS, 0.23));
+
+
+
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	
@@ -57,20 +62,23 @@ bool MainScene::init()
 	runBackgroundColorAnimation();
 
 
-	std::string title = "Polimorf v" + std::to_string(VERSION);
-    auto label = Label::createWithTTF(title.substr(0,13), "fonts/Marker Felt.ttf", 24);
-    if (label == nullptr)
+	std::string title = "(https://github.com/Auriatta/Poliform)";
+    auto label1 = Label::createWithTTF(title, "fonts/arial.ttf", 24);
+	
+    if (label1 == nullptr)
     {
-        problemLoading("'fonts/Marker Felt.ttf'");
+        problemLoading("'fonts/fontawesome-webfont.ttf'");
     }
     else
     {
+		label1->setOpacity(140);
         // position the label on the center of the screen
-        label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                                origin.y + visibleSize.height - label->getContentSize().height));
+        label1->setPosition(Vec2(origin.x + visibleSize.width/2,
+                                origin.y + 100));
+		
 
         // add the label as a child to this layer
-        this->addChild(label, 1);
+        this->addChild(label1, 1);
     }
 
 
@@ -79,17 +87,18 @@ bool MainScene::init()
 
 	
 	GameBridge::getInstance().SetMainScene(this);
+
+	this->scheduleUpdate();
 	
-
-	for (int i = 0; i < NUMBER_OF_POLIMORFS; i++)
-	{
-		polimorf.push_front(Polimorf());
-		polimorf.front().Run();
-	}
-
 
 
     return true;
+}
+
+void MainScene::update(float delta)
+{
+	if(Exposition)
+	Exposition->Update(delta);
 }
 
 void MainScene::runBackgroundColorAnimation()
@@ -97,19 +106,13 @@ void MainScene::runBackgroundColorAnimation()
 	auto screen_size = Director::getInstance()->getVisibleSize();
 	cocos2d::Color4B bg_color = Color4B(50, 50, 50,255);
 	
+
 	cocos2d::LayerColor* screen_layer = LayerColor::create(
 		bg_color,
 		screen_size.width,
 		screen_size.height);
 	
+
 	this->addChild(screen_layer,0);
 
-	screen_layer->runAction(RepeatForever::create(
-		Sequence::create(
-			DelayTime::create(4),
-			TintTo::create(1.5, Color3B(67,67,67)),
-			TintTo::create(1.5, Color3B(50, 50, 50)),
-			nullptr )));
-			
-	bg_color = Color4B::BLUE;
 }

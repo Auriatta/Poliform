@@ -27,17 +27,22 @@
 
 #include "Include.h"
 #include "Polimorf.h"
-
+#include "ExpositionMenager.h"
 
 class MainScene : public cocos2d::Scene
 {
 public:
+
     static cocos2d::Scene* createScene();
 	
+    
+	std::list<Polimorf*> polimorf;
 
-	std::list<Polimorf> polimorf;
+    std::unique_ptr<TurnEveryPoliform> Exposition;
+
 
     virtual bool init();
+    virtual void update(float);
 
 	void runBackgroundColorAnimation();
 

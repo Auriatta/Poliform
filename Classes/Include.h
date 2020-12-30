@@ -1,16 +1,17 @@
 #pragma once
 #include "cocos2d.h"
 #include <stdlib.h>
-#include<vector>
+#include <vector>
+#include<list>
 
-#define BORDER_HEIGHT 400
-#define BORDER_WIDTH 400
+#define BORDER_HEIGHT 1040
+#define BORDER_WIDTH 1880
 #define BORDER_Y_ORIGIN 40
 #define BORDER_X_ORIGIN 40
 
-#define VERSION 0.7
+#define VERSION 0.87
 
-#define NUMBER_OF_POLIMORFS 3
+#define NUMBER_OF_POLIMORFS 26
 
 typedef cocos2d::RandomHelper Random;
 

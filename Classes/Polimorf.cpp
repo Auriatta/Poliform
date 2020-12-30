@@ -4,8 +4,7 @@
 void Polimorf::Create_Spawner(cocos2d::Point location)
 {
 	/*
-	I created this object via 'new'
-	because it will release itself anyway
+	This new object will release itself
 	*/
 	CellSpawner* cell_spawner = new CellSpawner(location);
 }
@@ -28,13 +27,18 @@ cocos2d::Point Polimorf::getRandomPositionInBordersBox()
 
 void Polimorf::Run()
 {
-	const float refreshRate = 0.5;
+	const float refreshRate = 0.6;
 	cocos2d::Director::getInstance()->getScheduler()->schedule(
 		cocos2d::ccSchedulerFunc( std::bind(&Polimorf::Update,this)),
 		this, refreshRate, 0, "MainPoliformUpdate");
-
+	
 
 	
+}
+
+Polimorf::~Polimorf()
+{
+	cocos2d::Director::getInstance()->getScheduler()->unscheduleAllForTarget(this);
 }
 
 

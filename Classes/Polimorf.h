@@ -9,6 +9,19 @@
 
 class Polimorf
 {
+public:
+	Polimorf()
+		: behavior(std::make_unique<AI_Basic>(AI_Basic(getRandomPositionInBordersBox())))
+	{
+		cell_spawners.clear();
+
+	};
+
+
+	void Run();
+
+	~Polimorf();
+
 private:
 	std::unique_ptr<AI> behavior;
 
@@ -20,16 +33,6 @@ private:
 
 	cocos2d::Point getRandomPositionInBordersBox();
 
-public:
-	Polimorf()
-		: behavior(std::make_unique<AI_Basic>(AI_Basic(getRandomPositionInBordersBox())))
-	{
-		cell_spawners.clear();
-
-	};
-
-
-	void Run();
 
 };
 
